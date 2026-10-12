@@ -1,3 +1,5 @@
+import NotasList from "@/components/NotasList";
+
 export default function Page() {
-  return <main className="p-10 text-[var(--muted)]">Próximamente…</main>;
+  return <NotasList scope="rapidas" base="/notas" backHref="/" backLabel="Inicio" titulo="Notas rápidas" />;
 }
