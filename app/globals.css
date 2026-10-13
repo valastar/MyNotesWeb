@@ -30,3 +30,8 @@ body {
   height: 0;
   pointer-events: none;
 }
+
+.tiptap img.nota-img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 0.75em 0; }
+.tiptap img.ProseMirror-selectednode { outline: 2px solid var(--accent); }
+.tiptap u { text-decoration: underline; }
+.tiptap s { text-decoration: line-through; }
