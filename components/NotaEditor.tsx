@@ -21,7 +21,11 @@ import {
   ListOrdered,
   ImagePlus,
   Sigma,
+  ScanText,
+  Braces,
 } from "lucide-react";
+import { leerTexto } from "@/lib/ocr";
+import { Llave } from "./llaves";
 import { useNotas, type Nota } from "@/lib/useNotas";
 
 type Props = { scope: string; notaId: string; backHref: string };
@@ -178,10 +182,30 @@ function Editor({
   const [grupo, setGrupo] = useState("Cálculo");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const inputFoto = useRef<HTMLInputElement>(null);
+  const [leyendo, setLeyendo] = useState(false);
 
   const guardarConRetraso = (c: { titulo?: string; contenido?: string }) => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => onChange(c), 400);
+  };
+
+  const importarFoto = async (file: File) => {
+    if (!editor) return;
+    setLeyendo(true);
+    try {
+      const texto = await leerTexto(file);
+      if (!texto) return alert("No se detectó texto en la foto.");
+      const html = texto
+        .split(/\n+/)
+        .map((l) => `<p>${l.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</p>`)
+        .join("");
+      editor.chain().focus().insertContent(html).run();
+    } catch {
+      alert("No se pudo leer la foto.");
+    } finally {
+      setLeyendo(false);
+    }
   };
 
   const editor = useEditor({
@@ -189,6 +213,7 @@ function Editor({
       StarterKit, // incluye underline, strike, bold, italic...
       Image.configure({ HTMLAttributes: { class: "nota-img" } }),
       Placeholder.configure({ placeholder: "Empieza a escribir…" }),
+      Llave,
     ],
     content: nota.contenido,
     immediatelyRender: false,
@@ -295,6 +320,38 @@ function Editor({
               <ListOrdered size={16} />,
               "Lista numerada",
             )}
+
+            {tool(
+              editor.isActive("llave"),
+              (e) => e.chain().focus().toggleLlave().run(),
+              <Braces size={16} />,
+              "Llave",
+            )}
+
+            <button
+              className={btn(false)}
+              onClick={() => inputFoto.current?.click()}
+              disabled={leyendo}
+              title="Foto a texto"
+            >
+              <ScanText size={16} />
+            </button>
+            {leyendo && (
+              <span className="ml-2 self-center text-xs text-[var(--muted)]">
+                Leyendo…
+              </span>
+            )}
+            <input
+              ref={inputFoto}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) importarFoto(f);
+                e.target.value = "";
+              }}
+            />
             <button
               type="button"
               aria-label="Imagen"
