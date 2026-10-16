@@ -23,7 +23,14 @@ import {
   Sigma,
   ScanText,
   Braces,
+  TableIcon,
 } from "lucide-react";
+import {
+  Table,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@tiptap/extension-table";
 import { leerTexto } from "@/lib/ocr";
 import { Llave } from "./llaves";
 import { useNotas, type Nota } from "@/lib/useNotas";
@@ -214,6 +221,10 @@ function Editor({
       Image.configure({ HTMLAttributes: { class: "nota-img" } }),
       Placeholder.configure({ placeholder: "Empieza a escribir…" }),
       Llave,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
     ],
     content: nota.contenido,
     immediatelyRender: false,
@@ -319,6 +330,71 @@ function Editor({
               (e) => e.chain().focus().toggleOrderedList().run(),
               <ListOrdered size={16} />,
               "Lista numerada",
+            )}
+
+            {tool(
+              editor.isActive("table"),
+              (e) =>
+                e
+                  .chain()
+                  .focus()
+                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                  .run(),
+              <TableIcon size={16} />,
+              "Tabla",
+            )}
+
+            {editor.isActive("table") && (
+              <div className="mt-2 flex flex-wrap gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-2 text-sm">
+                {[
+                  [
+                    "+ Fila arriba",
+                    (e: TipTapEditor) => e.chain().focus().addRowBefore().run(),
+                  ],
+                  [
+                    "+ Fila abajo",
+                    (e: TipTapEditor) => e.chain().focus().addRowAfter().run(),
+                  ],
+                  [
+                    "+ Columna izq.",
+                    (e: TipTapEditor) =>
+                      e.chain().focus().addColumnBefore().run(),
+                  ],
+                  [
+                    "+ Columna der.",
+                    (e: TipTapEditor) =>
+                      e.chain().focus().addColumnAfter().run(),
+                  ],
+                  [
+                    "− Fila",
+                    (e: TipTapEditor) => e.chain().focus().deleteRow().run(),
+                  ],
+                  [
+                    "− Columna",
+                    (e: TipTapEditor) => e.chain().focus().deleteColumn().run(),
+                  ],
+                  [
+                    "Borrar tabla",
+                    (e: TipTapEditor) => e.chain().focus().deleteTable().run(),
+                  ],
+                ].map(([label, fn]) => (
+                  <button
+                    key={label as string}
+                    type="button"
+                    onMouseDown={(ev) => {
+                      ev.preventDefault();
+                      (fn as (e: TipTapEditor) => void)(editor);
+                    }}
+                    className={`rounded-md px-2 py-1 hover:bg-[var(--surface-hover)] ${
+                      label === "Borrar tabla"
+                        ? "text-red-400"
+                        : "text-[var(--muted)] hover:text-[var(--text)]"
+                    }`}
+                  >
+                    {label as string}
+                  </button>
+                ))}
+              </div>
             )}
 
             {tool(
