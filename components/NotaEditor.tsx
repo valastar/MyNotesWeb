@@ -9,6 +9,9 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { FontSize } from "./fontSize";
 import {
   ArrowLeft,
   Bold,
@@ -24,6 +27,11 @@ import {
   ScanText,
   Braces,
   TableIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AArrowUp,
+  AArrowDown,
 } from "lucide-react";
 import {
   Table,
@@ -217,7 +225,10 @@ function Editor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit, // incluye underline, strike, bold, italic...
+      StarterKit,
+      TextStyle,
+      FontSize,
+      TextAlign.configure({ types: ["heading", "paragraph", "llaveLabel"] }),
       Image.configure({ HTMLAttributes: { class: "nota-img" } }),
       Placeholder.configure({ placeholder: "Empieza a escribir…" }),
       Llave,
@@ -236,6 +247,16 @@ function Editor({
     if (!file || !editor) return;
     const src = await comprimir(file);
     editor.chain().focus().setImage({ src }).run();
+  };
+
+  const CAMBIAR_TAM = (e: TipTapEditor, delta: number) => {
+    const actual =
+      parseInt(e.getAttributes("textStyle").fontSize ?? "16", 10) || 16;
+    const nuevo = Math.min(48, Math.max(10, actual + delta));
+    e.chain()
+      .focus()
+      .setMark("textStyle", { fontSize: `${nuevo}px` })
+      .run();
   };
 
   const btn = (activo: boolean) =>
@@ -306,6 +327,37 @@ function Editor({
               (e) => e.chain().focus().toggleStrike().run(),
               <Strikethrough size={16} />,
               "Tachado",
+            )}
+            {tool(
+              false,
+              (e) => CAMBIAR_TAM(e, -2),
+              <AArrowDown size={16} />,
+              "Reducir texto",
+            )}
+            {tool(
+              false,
+              (e) => CAMBIAR_TAM(e, 2),
+              <AArrowUp size={16} />,
+              "Aumentar texto",
+            )}
+
+            {tool(
+              editor.isActive({ textAlign: "left" }),
+              (e) => e.chain().focus().setTextAlign("left").run(),
+              <AlignLeft size={16} />,
+              "Alinear a la izquierda",
+            )}
+            {tool(
+              editor.isActive({ textAlign: "center" }),
+              (e) => e.chain().focus().setTextAlign("center").run(),
+              <AlignCenter size={16} />,
+              "Centrar",
+            )}
+            {tool(
+              editor.isActive({ textAlign: "right" }),
+              (e) => e.chain().focus().setTextAlign("right").run(),
+              <AlignRight size={16} />,
+              "Alinear a la derecha",
             )}
             {tool(
               editor.isActive("heading", { level: 1 }),

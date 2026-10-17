@@ -103,3 +103,10 @@ body {
 }
 .tiptap.resize-cursor { cursor: col-resize; }
 .tableWrapper { overflow-x: auto; }
+
+.tiptap table { border-collapse: collapse; width: 100%; margin: 0.75em 0; table-layout: fixed; }
+.tiptap th, .tiptap td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; vertical-align: top; position: relative; }
+.tiptap th { background: var(--surface); font-weight: 600; text-align: left; }
+.tiptap .selectedCell { background: var(--surface-hover); }
+.tiptap .column-resize-handle { position: absolute; right: -2px; top: 0; bottom: 0; width: 4px; background: var(--accent); pointer-events: none; }
+.tiptap.resize-cursor { cursor: col-resize; }
