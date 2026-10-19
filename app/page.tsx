@@ -7,7 +7,7 @@ export default function Home() {
   const { name, ready, login, logout } = useUser();
 
   if (!ready) return null;
-  if (!name) return <NameGate onSubmit={login} />;
+  if (!name) return <NameGate onLogin={login} />;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">

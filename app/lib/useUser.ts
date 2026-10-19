@@ -1,6 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+
+const nombreDe = (u?: User | null) =>
+  u ? (u.user_metadata?.full_name ?? u.user_metadata?.name ?? u.email ?? null) : null;
 
 export function useUser() {
   const [name, setName] = useState<string | null>(null);
@@ -8,17 +12,21 @@ export function useUser() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      setName(data.session?.user.user_metadata?.name ?? null);
+      setName(nombreDe(data.session?.user));
       setReady(true);
     });
+    const { data: sub } = supabase.auth.onAuthStateChange((_evento, session) => {
+      setName(nombreDe(session?.user));
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
-  const login = async (n: string) => {
-    const { error } = await supabase.auth.signInAnonymously({
-      options: { data: { name: n.trim() } },
+  const login = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (error) return alert(error.message);
-    setName(n.trim());
+    if (error) alert(error.message);
   };
 
   const logout = async () => {
